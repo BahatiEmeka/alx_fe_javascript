@@ -7,27 +7,20 @@
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
-
-  <!-- Quote Display Area -->
   <div id="quoteDisplay"></div>
-
-  <!-- Category Filter Dropdown -->
+  
+  <!-- Notification area for conflict resolution -->
+  <div id="notification" style="display: none; color: red;"></div>
+  
+  <button id="newQuote">Show New Quote</button>
   <select id="categoryFilter" onchange="filterQuotes()">
     <option value="all">All Categories</option>
-    <!-- Categories will be dynamically populated here -->
   </select>
 
-  <!-- Button to show a new random quote -->
-  <button id="newQuote">Show New Quote</button>
-
-  <!-- Form for adding a new quote -->
   <div id="quoteFormContainer"></div>
 
-  <!-- Button to export quotes as JSON -->
-  <button onclick="exportToJson()">Export Quotes to JSON</button>
-
-  <!-- Input for importing quotes from JSON file -->
-  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+  <!-- Manual conflict resolution button -->
+  <button id="resolveConflict" style="display:none;" onclick="resolveConflictManually()">Resolve Conflict Manually</button>
 
   <script src="script.js"></script>
 </body>

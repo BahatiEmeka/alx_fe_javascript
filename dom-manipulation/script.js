@@ -2,6 +2,9 @@
 let quotes = [];
 let categories = [];
 
+// Simulated server quotes (from JSONPlaceholder)
+const serverQuotesUrl = 'https://jsonplaceholder.typicode.com/posts'; // This simulates the server
+
 // Function to load quotes from localStorage when the page initializes
 function loadQuotes() {
   const storedQuotes = localStorage.getItem('quotes');
@@ -16,13 +19,53 @@ function loadQuotes() {
     ];
   }
 
-  // Extract unique categories and update the category list
   categories = [...new Set(quotes.map(quote => quote.category))];
+  populateCategories();
+  filterQuotes();
 }
 
 // Function to save quotes to localStorage after every update
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+// Function to simulate fetching data from server periodically
+function fetchServerQuotes() {
+  fetch(serverQuotesUrl)
+    .then(response => response.json())
+    .then(data => {
+      const serverQuotes = data.slice(0, 3).map(post => ({
+        text: post.title,
+        category: "Server Category"
+      }));
+      
+      handleSync(serverQuotes);
+    })
+    .catch(error => console.error("Error fetching server quotes:", error));
+}
+
+// Function to handle data sync with server and resolve conflicts
+function handleSync(serverQuotes) {
+  let conflicts = false;
+
+  serverQuotes.forEach(serverQuote => {
+    const existingQuote = quotes.find(quote => quote.text === serverQuote.text);
+
+    if (!existingQuote) {
+      quotes.push(serverQuote);
+      conflicts = true;
+    }
+  });
+
+  if (conflicts) {
+    document.getElementById('notification').style.display = 'block';
+    document.getElementById('notification').textContent = "Conflicts detected! Data synced from server.";
+    document.getElementById('resolveConflict').style.display = 'block'; // Show manual resolution option
+    saveQuotes();
+    filterQuotes();
+  } else {
+    console.log('No conflicts detected, data is up to date.');
+  }
 }
 
 // Function to populate categories dynamically in the dropdown menu
@@ -86,20 +129,20 @@ function addQuote() {
       categories.push(newQuoteCategory); // Add new category to the array
     }
 
-    // Save the updated quotes and categories to localStorage
     saveQuotes();
     populateCategories(); // Update the dropdown with the new category
-
-    // Clear the input fields
-    document.getElementById('newQuoteText').value = '';
-    document.getElementById('newQuoteCategory').value = '';
-
-    // Display the newly added quote in the filtered view
     filterQuotes();
     alert("New quote added!");
   } else {
     alert("Please enter both a quote and a category.");
   }
+}
+
+// Manual conflict resolution option
+function resolveConflictManually() {
+  alert("Manual conflict resolution initiated. Please handle conflicts as needed.");
+  document.getElementById('notification').style.display = 'none'; // Hide notification
+  document.getElementById('resolveConflict').style.display = 'none'; // Hide button
 }
 
 // Function to create the form for adding new quotes dynamically
@@ -135,3 +178,6 @@ filterQuotes();
 
 // Event listener for the "Show New Quote" button
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+
+// Periodically sync with server (e.g., every 10 seconds)
+setInterval(fetchServerQuotes, 10000); // 10 seconds interval
