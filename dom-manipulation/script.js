@@ -30,35 +30,43 @@ function saveQuotes() {
 }
 
 // Function to fetch quotes from the server (mock API)
-function fetchQuotesFromServer() {
-  fetch(serverQuotesUrl)
-    .then(response => response.json())
-    .then(data => {
-      const serverQuotes = data.slice(0, 5).map(post => ({
-        text: post.title,
-        category: "Server Category"
-      }));
-      syncQuotes(serverQuotes);
-    })
-    .catch(error => console.error("Error fetching server quotes:", error));
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch(serverQuotesUrl);
+    const data = await response.json();
+
+    // Simulate server quotes structure
+    const serverQuotes = data.slice(0, 5).map(post => ({
+      text: post.title,
+      category: "Server Category"
+    }));
+
+    await syncQuotes(serverQuotes);
+  } catch (error) {
+    console.error("Error fetching server quotes:", error);
+  }
 }
 
 // Function to post new quotes to the server (mock API)
-function postQuoteToServer(newQuote) {
-  fetch(serverQuotesUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newQuote)
-  })
-  .then(response => response.json())
-  .then(data => console.log('Quote successfully posted to server:', data))
-  .catch(error => console.error('Error posting quote to server:', error));
+async function postQuoteToServer(newQuote) {
+  try {
+    const response = await fetch(serverQuotesUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newQuote)
+    });
+
+    const data = await response.json();
+    console.log('Quote successfully posted to server:', data);
+  } catch (error) {
+    console.error('Error posting quote to server:', error);
+  }
 }
 
 // Function to handle syncing between local storage and server data
-function syncQuotes(serverQuotes) {
+async function syncQuotes(serverQuotes) {
   let conflicts = false;
 
   serverQuotes.forEach(serverQuote => {
@@ -130,7 +138,7 @@ function showRandomQuote() {
 }
 
 // Function to add a new quote and update the DOM and localStorage
-function addQuote() {
+async function addQuote() {
   let newQuoteText = document.getElementById('newQuoteText').value;
   let newQuoteCategory = document.getElementById('newQuoteCategory').value;
 
@@ -144,7 +152,7 @@ function addQuote() {
     saveQuotes();
     populateCategories(); // Update the dropdown with the new category
     filterQuotes();
-    postQuoteToServer(newQuote); // Post the new quote to the server
+    await postQuoteToServer(newQuote); // Post the new quote to the server
     alert("New quote added!");
   } else {
     alert("Please enter both a quote and a category.");
