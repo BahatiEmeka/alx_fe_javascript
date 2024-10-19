@@ -3,7 +3,7 @@ let quotes = [];
 let categories = [];
 
 // Simulated server quotes (from JSONPlaceholder)
-const serverQuotesUrl = 'https://jsonplaceholder.typicode.com/posts'; // This simulates the server
+const serverQuotesUrl = 'https://jsonplaceholder.typicode.com/posts'; // Mock API for server data
 
 // Function to load quotes from localStorage when the page initializes
 function loadQuotes() {
@@ -29,28 +29,40 @@ function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Function to simulate fetching data from server periodically
-function fetchServerQuotes() {
+// Function to fetch quotes from the server (mock API)
+function fetchQuotesFromServer() {
   fetch(serverQuotesUrl)
     .then(response => response.json())
     .then(data => {
-      const serverQuotes = data.slice(0, 3).map(post => ({
+      const serverQuotes = data.slice(0, 5).map(post => ({
         text: post.title,
         category: "Server Category"
       }));
-      
-      handleSync(serverQuotes);
+      syncQuotes(serverQuotes);
     })
     .catch(error => console.error("Error fetching server quotes:", error));
 }
 
-// Function to handle data sync with server and resolve conflicts
-function handleSync(serverQuotes) {
+// Function to post new quotes to the server (mock API)
+function postQuoteToServer(newQuote) {
+  fetch(serverQuotesUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newQuote)
+  })
+  .then(response => response.json())
+  .then(data => console.log('Quote successfully posted to server:', data))
+  .catch(error => console.error('Error posting quote to server:', error));
+}
+
+// Function to handle syncing between local storage and server data
+function syncQuotes(serverQuotes) {
   let conflicts = false;
 
   serverQuotes.forEach(serverQuote => {
     const existingQuote = quotes.find(quote => quote.text === serverQuote.text);
-
     if (!existingQuote) {
       quotes.push(serverQuote);
       conflicts = true;
@@ -132,6 +144,7 @@ function addQuote() {
     saveQuotes();
     populateCategories(); // Update the dropdown with the new category
     filterQuotes();
+    postQuoteToServer(newQuote); // Post the new quote to the server
     alert("New quote added!");
   } else {
     alert("Please enter both a quote and a category.");
@@ -180,4 +193,4 @@ filterQuotes();
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 // Periodically sync with server (e.g., every 10 seconds)
-setInterval(fetchServerQuotes, 10000); // 10 seconds interval
+setInterval(fetchQuotesFromServer, 10000); // 10 seconds interval
