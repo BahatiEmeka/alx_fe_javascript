@@ -1,13 +1,12 @@
 // Array to store quotes, initially empty (will be populated from localStorage)
 let quotes = [];
-let categories = new Set();  // Using a Set to store unique categories
+let categories = [];  // To store unique categories
 
 // Function to load quotes from localStorage when the page is initialized
 function loadQuotes() {
   const storedQuotes = localStorage.getItem('quotes');
   if (storedQuotes) {
     quotes = JSON.parse(storedQuotes);  // Parse the quotes stored as JSON in localStorage
-    quotes.forEach(quote => categories.add(quote.category));  // Populate categories set
   } else {
     // Default quotes if localStorage is empty
     quotes = [
@@ -15,8 +14,10 @@ function loadQuotes() {
       { text: "Life is 10% what happens to us and 90% how we react to it.", category: "Life" },
       { text: "Your time is limited, don't waste it living someone else's life.", category: "Inspiration" },
     ];
-    quotes.forEach(quote => categories.add(quote.category));  // Populate default categories
   }
+
+  // Extract unique categories and update the category list
+  categories = [...new Set(quotes.map(quote => quote.category))];
 }
 
 // Function to save quotes to localStorage after every update
@@ -29,7 +30,6 @@ function populateCategories() {
   const categoryFilter = document.getElementById('categoryFilter');
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';  // Reset dropdown
 
-  // Add each category as an option in the dropdown
   categories.forEach(category => {
     let option = document.createElement('option');
     option.value = category;
@@ -73,7 +73,9 @@ function addQuote() {
   if (newQuoteText && newQuoteCategory) {
     let newQuote = { text: newQuoteText, category: newQuoteCategory };
     quotes.push(newQuote);
-    categories.add(newQuoteCategory);  // Add new category to the set
+    if (!categories.includes(newQuoteCategory)) {
+      categories.push(newQuoteCategory);  // Add new category to the array
+    }
 
     // Save the updated quotes and categories to localStorage
     saveQuotes();
@@ -138,7 +140,11 @@ function importFromJsonFile(event) {
     try {
       const importedQuotes = JSON.parse(event.target.result);
       if (Array.isArray(importedQuotes)) {
-        importedQuotes.forEach(quote => categories.add(quote.category));
+        importedQuotes.forEach(quote => {
+          if (!categories.includes(quote.category)) {
+            categories.push(quote.category);
+          }
+        });
         quotes.push(...importedQuotes);
         saveQuotes();
         populateCategories();
@@ -162,4 +168,6 @@ populateCategories();
 filterQuotes();
 
 // Event listener for the "Show New Quote" button
-document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+document.getElementById('newQuote').addEventListener('click', () => {
+  filterQuotes();
+});
