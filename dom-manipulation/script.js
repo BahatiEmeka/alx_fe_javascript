@@ -42,6 +42,7 @@ async function fetchQuotesFromServer() {
     }));
 
     await syncQuotes(serverQuotes);
+    showNotification("Quotes synced with server!"); // Show notification for successful sync
   } catch (error) {
     console.error("Error fetching server quotes:", error);
   }
@@ -164,6 +165,16 @@ function resolveConflictManually() {
   alert("Manual conflict resolution initiated. Please handle conflicts as needed.");
   document.getElementById('notification').style.display = 'none'; // Hide notification
   document.getElementById('resolveConflict').style.display = 'none'; // Hide button
+}
+
+// Function to show notifications
+function showNotification(message) {
+  const notificationDiv = document.getElementById('notification');
+  notificationDiv.style.display = 'block';
+  notificationDiv.textContent = message;
+  setTimeout(() => {
+    notificationDiv.style.display = 'none'; // Hide notification after 3 seconds
+  }, 3000);
 }
 
 // Function to create the form for adding new quotes dynamically
